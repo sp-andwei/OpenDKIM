@@ -182,7 +182,7 @@ dkim_res_query(void *srv, int type, unsigned char *query, unsigned char *buf,
 #else /* HAVE_RES_NINIT */
 	ret = res_query((char *) query, C_IN, type, buf, buflen);
 #endif /* HAVE_RES_NINIT */
-	if (ret == -1)
+	if (ret == -1 && h_errno != HOST_NOT_FOUND)
 		return DKIM_DNS_ERROR;
 
 	rq = (struct dkim_res_qh *) malloc(sizeof *rq);
@@ -194,10 +194,12 @@ dkim_res_query(void *srv, int type, unsigned char *query, unsigned char *buf,
 		rq->rq_dnssec = DKIM_DNSSEC_SECURE;
 	else
 		rq->rq_dnssec = DKIM_DNSSEC_INSECURE;
-	if (ret == -1)
+
+	if (h_errno == HOST_NOT_FOUND)
 	{
-		rq->rq_error = errno;
-		rq->rq_buflen = 0;
+		rq->rq_error = 0;
+		rq->rq_buflen = sizeof(*hdr);
+		hdr->rcode = NXDOMAIN;
 	}
 	else
 	{
