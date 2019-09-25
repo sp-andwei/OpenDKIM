@@ -195,7 +195,7 @@ dkim_res_query(void *srv, int type, unsigned char *query, unsigned char *buf,
 	else
 		rq->rq_dnssec = DKIM_DNSSEC_INSECURE;
 
-	if (h_errno == HOST_NOT_FOUND)
+	if (ret == -1 && h_errno == HOST_NOT_FOUND)
 	{
 		rq->rq_error = 0;
 		rq->rq_buflen = sizeof(*hdr);
